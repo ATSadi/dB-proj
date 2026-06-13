@@ -69,7 +69,7 @@ dB proj/
 | 6 | Triggers (Part 1): SLA, status log, worker availability *(this push)* |
 | 7 | Triggers (Part 2): feedback score, chronic issue detection *(this push)* |
 | 8 | Stored procedures *(this push)* |
-| 9 | Functions |
+| 9 | Functions *(this push)* |
 | 10 | Views |
 | 11 | Advanced queries |
 | 12 | Frontend (HTML/CSS/JS) |
