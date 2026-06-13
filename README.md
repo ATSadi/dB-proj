@@ -65,7 +65,7 @@ dB proj/
 | 2 | ERD & schema design document *(this push)* |
 | 3 | DDL: core tables (USERS, LOCATIONS, COMPLAINTS) *(this push)* |
 | 4 | DDL: supporting tables + sequences *(this push)* |
-| 5 | DML: seed data |
+| 5 | DML: seed data *(this push)* |
 | 6 | Triggers (Part 1): SLA, status log, worker availability |
 | 7 | Triggers (Part 2): feedback score, chronic issue detection |
 | 8 | Stored procedures |
