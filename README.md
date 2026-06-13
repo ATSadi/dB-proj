@@ -71,7 +71,7 @@ dB proj/
 | 8 | Stored procedures *(this push)* |
 | 9 | Functions *(this push)* |
 | 10 | Views *(this push)* |
-| 11 | Advanced queries |
+| 11 | Advanced queries *(this push)* |
 | 12 | Frontend (HTML/CSS/JS) |
 | 13 | Transaction management & exception handling |
 | 14 | Final polish, demo queries, screenshots |
