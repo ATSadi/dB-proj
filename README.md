@@ -63,7 +63,7 @@ dB proj/
 |------|-------------|
 | 1 | Project setup & README *(this push)* |
 | 2 | ERD & schema design document *(this push)* |
-| 3 | DDL: core tables (USERS, LOCATIONS, COMPLAINTS) |
+| 3 | DDL: core tables (USERS, LOCATIONS, COMPLAINTS) *(this push)* |
 | 4 | DDL: supporting tables + sequences |
 | 5 | DML: seed data |
 | 6 | Triggers (Part 1): SLA, status log, worker availability |
