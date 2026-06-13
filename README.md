@@ -70,7 +70,7 @@ dB proj/
 | 7 | Triggers (Part 2): feedback score, chronic issue detection *(this push)* |
 | 8 | Stored procedures *(this push)* |
 | 9 | Functions *(this push)* |
-| 10 | Views |
+| 10 | Views *(this push)* |
 | 11 | Advanced queries |
 | 12 | Frontend (HTML/CSS/JS) |
 | 13 | Transaction management & exception handling |
