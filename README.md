@@ -67,7 +67,7 @@ dB proj/
 | 4 | DDL: supporting tables + sequences *(this push)* |
 | 5 | DML: seed data *(this push)* |
 | 6 | Triggers (Part 1): SLA, status log, worker availability *(this push)* |
-| 7 | Triggers (Part 2): feedback score, chronic issue detection |
+| 7 | Triggers (Part 2): feedback score, chronic issue detection *(this push)* |
 | 8 | Stored procedures |
 | 9 | Functions |
 | 10 | Views |
@@ -80,7 +80,7 @@ dB proj/
 
 1. Run DDL scripts in order: `sql/ddl/01_create_tables.sql` → `03_sequences.sql`
 2. Run DML: `sql/dml/01_seed_data.sql`
-3. Run PL/SQL: `sql/plsql/01_triggers.sql` through `05_transactions.sql`
+3. Run PL/SQL: `sql/plsql/01_triggers.sql`, `02_triggers_part2.sql` through `05_transactions.sql`
 4. Configure Oracle connection in `frontend/.env`
 5. Start API: `cd frontend && npm install && npm start`
 6. Open `http://localhost:3000`
