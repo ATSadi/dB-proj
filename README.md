@@ -66,7 +66,7 @@ dB proj/
 | 3 | DDL: core tables (USERS, LOCATIONS, COMPLAINTS) *(this push)* |
 | 4 | DDL: supporting tables + sequences *(this push)* |
 | 5 | DML: seed data *(this push)* |
-| 6 | Triggers (Part 1): SLA, status log, worker availability |
+| 6 | Triggers (Part 1): SLA, status log, worker availability *(this push)* |
 | 7 | Triggers (Part 2): feedback score, chronic issue detection |
 | 8 | Stored procedures |
 | 9 | Functions |
