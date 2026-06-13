@@ -50,18 +50,19 @@ dB proj/
 
 ## ERD
 
-> Placeholder — ERD diagram will be added in Push 2.
-
-![Entity Relationship Diagram](assets/erd.png)
-
-*Diagram source: `docs/erd.dbml` (dbdiagram.io) — export to `assets/erd.png`.*
+| Resource | Path |
+|----------|------|
+| dbdiagram.io source | [`docs/erd.dbml`](docs/erd.dbml) |
+| Schema design (3NF, relationships) | [`docs/schema_design.md`](docs/schema_design.md) |
+| Column definitions | [`docs/data_dictionary.md`](docs/data_dictionary.md) |
+| PNG export (optional) | Import `erd.dbml` at [dbdiagram.io](https://dbdiagram.io) → Export → `assets/erd.png` |
 
 ## Development Plan (14 Pushes)
 
 | Push | Deliverable |
 |------|-------------|
 | 1 | Project setup & README *(this push)* |
-| 2 | ERD & schema design document |
+| 2 | ERD & schema design document *(this push)* |
 | 3 | DDL: core tables (USERS, LOCATIONS, COMPLAINTS) |
 | 4 | DDL: supporting tables + sequences |
 | 5 | DML: seed data |
