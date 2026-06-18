@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student — Campus Maintenance</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <nav class="navbar" id="navbar"></nav>
+    <div class="container">
+        <div id="alert"></div>
+
+        <div class="card">
+            <h2>Submit Complaint</h2>
+            <form id="complaintForm">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Location</label>
+                        <select id="locationId" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="category" required>
+                            <option value="electrical">Electrical</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="furniture">Furniture</option>
+                            <option value="it">IT</option>
+                            <option value="cleaning">Cleaning</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select id="priority" required>
+                            <option value="urgent">Urgent (4 hrs)</option>
+                            <option value="medium" selected>Medium (24 hrs)</option>
+                            <option value="low">Low (72 hrs)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="description" placeholder="Describe the issue..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Complaint</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>My Complaints</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Location</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>SLA Deadline</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintsBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/common.js"></script>
+    <script src="/js/student.js"></script>
+</body>
+</html>

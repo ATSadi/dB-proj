@@ -1,0 +1,16 @@
+{
+  "name": "campus-complaint-system",
+  "version": "1.0.0",
+  "description": "Campus Maintenance Complaint Management System API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "oracledb": "^6.5.0"
+  }
+}

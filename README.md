@@ -72,11 +72,27 @@ dB proj/
 | 9 | Functions *(this push)* |
 | 10 | Views *(this push)* |
 | 11 | Advanced queries *(this push)* |
-| 12 | Frontend (HTML/CSS/JS) |
+| 12 | Frontend (HTML/CSS/JS) + Node.js API *(this push)* |
 | 13 | Transaction management & exception handling |
 | 14 | Final polish, demo queries, screenshots |
 
-## Setup (after all pushes)
+## Frontend (Push 12)
+
+| Page | Role | Features |
+|------|------|----------|
+| `/` | All | Login by email, role-based redirect |
+| `/student.html` | Student | Submit complaint, view status, submit feedback |
+| `/worker.html` | Worker | View assignments, update status |
+| `/admin.html` | Admin/Supervisor | Dashboard, assign workers, reports |
+
+```bash
+cd frontend
+copy .env.example .env    # edit with Oracle credentials
+npm install
+npm start
+# Open http://localhost:3000
+```
+
 
 1. Run DDL scripts in order: `sql/ddl/01_create_tables.sql` → `03_sequences.sql`
 2. Run DML: `sql/dml/01_seed_data.sql`
