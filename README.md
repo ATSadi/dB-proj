@@ -73,7 +73,7 @@ dB proj/
 | 10 | Views *(this push)* |
 | 11 | Advanced queries *(this push)* |
 | 12 | Frontend (HTML/CSS/JS) + Node.js API *(this push)* |
-| 13 | Transaction management & exception handling |
+| 13 | Transaction management & exception handling *(this push)* |
 | 14 | Final polish, demo queries, screenshots |
 
 ## Frontend (Push 12)
@@ -96,7 +96,7 @@ npm start
 
 1. Run DDL scripts in order: `sql/ddl/01_create_tables.sql` → `03_sequences.sql`
 2. Run DML: `sql/dml/01_seed_data.sql`
-3. Run PL/SQL: `sql/plsql/01_triggers.sql`, `02_triggers_part2.sql` through `05_transactions.sql`
+3. Run PL/SQL: `sql/plsql/01_triggers.sql` through `06_transactions.sql`
 4. Configure Oracle connection in `frontend/.env`
 5. Start API: `cd frontend && npm install && npm start`
 6. Open `http://localhost:3000`

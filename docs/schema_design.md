@@ -128,7 +128,7 @@ erDiagram
 
 ---
 
-## 8. Role-Based Access (planned for Push 13)
+## 8. Role-Based Access (Push 13)
 
 | Role | Access |
 |------|--------|
@@ -136,6 +136,8 @@ erDiagram
 | `worker_role` | SELECT assigned complaints, UPDATE assignment status |
 | `supervisor_role` | Assign workers, view all complaints, run escalation |
 | `admin_role` | Full access including reports and chronic flags |
+
+Implemented in `sql/plsql/06_transactions.sql`
 
 ---
 
