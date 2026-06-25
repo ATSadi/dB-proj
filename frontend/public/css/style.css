@@ -318,6 +318,117 @@ select { cursor: pointer; }
 .demo-users strong { color: var(--text-soft); display: block; margin-bottom: 0.5rem; }
 .demo-users code { display: block; margin-top: 0.25rem; color: var(--text); font-size: 0.75rem; }
 
+/* ---------------------------------------------------------------- Auth (Phase 2) */
+.auth-shell {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1.05fr 0.95fr;
+    overflow: hidden;
+}
+
+/* Left hero panel */
+.auth-hero {
+    position: relative;
+    padding: 3.5rem 3.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    background:
+        radial-gradient(700px 400px at 20% 20%, rgba(79,140,255,0.32) 0%, transparent 60%),
+        radial-gradient(600px 400px at 90% 80%, rgba(124,92,255,0.34) 0%, transparent 55%),
+        linear-gradient(160deg, #101a30 0%, #0b1322 100%);
+    border-right: 1px solid var(--border-soft);
+}
+.auth-hero .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(48px);
+    opacity: 0.55;
+    pointer-events: none;
+}
+.auth-hero .orb-1 { width: 280px; height: 280px; background: #4f8cff; top: -60px; left: -40px; animation: floatGlow 9s var(--ease) infinite; }
+.auth-hero .orb-2 { width: 240px; height: 240px; background: #7c5cff; bottom: -50px; right: 10%; animation: floatGlow 11s var(--ease) infinite reverse; }
+.auth-hero .orb-3 { width: 180px; height: 180px; background: #22d3ee; top: 40%; right: -40px; animation: floatGlow 13s var(--ease) infinite; }
+
+.auth-brand { position: relative; z-index: 2; display: flex; align-items: center; gap: 0.85rem; }
+.auth-brand .logo {
+    width: 52px; height: 52px;
+    border-radius: 15px;
+    background: var(--grad-primary);
+    box-shadow: var(--glow-primary);
+    display: grid; place-items: center;
+    font-size: 1.6rem;
+}
+.auth-brand .brand-name { font-family: 'Plus Jakarta Sans'; font-weight: 800; font-size: 1.2rem; }
+.auth-brand .brand-sub { font-size: 0.78rem; color: var(--muted); }
+
+.auth-headline { position: relative; z-index: 2; margin: 2rem 0; }
+.auth-headline h2 {
+    font-size: 2.6rem;
+    line-height: 1.12;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    max-width: 460px;
+}
+.auth-headline h2 .grad {
+    background: var(--grad-text);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.auth-headline p { color: var(--text-soft); font-size: 1rem; max-width: 420px; }
+
+.auth-features { position: relative; z-index: 2; display: grid; gap: 0.9rem; }
+.auth-feature { display: flex; align-items: center; gap: 0.85rem; color: var(--text-soft); font-size: 0.92rem; }
+.auth-feature .ic {
+    width: 38px; height: 38px; flex-shrink: 0;
+    border-radius: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: grid; place-items: center;
+    font-size: 1.1rem;
+}
+
+/* Right form panel */
+.auth-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 2rem;
+}
+.auth-panel .login-card { max-width: 400px; box-shadow: none; background: transparent; border: none; padding: 0; }
+.auth-panel .login-card::before { display: none; }
+.auth-panel .login-card:hover { transform: none; }
+
+.divider {
+    display: flex; align-items: center; gap: 0.85rem;
+    margin: 1.5rem 0 1.1rem;
+    color: var(--faint); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.1em;
+}
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+.role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.role-card {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem;
+    padding: 0.85rem 0.95rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    transition: transform var(--t-fast), border-color var(--t-fast), background var(--t-fast), box-shadow var(--t-fast);
+    color: var(--text);
+    font-family: inherit;
+}
+.role-card:hover { transform: translateY(-3px); border-color: var(--primary); background: var(--surface3); box-shadow: var(--glow-primary); }
+.role-card .role-ic { font-size: 1.25rem; margin-bottom: 0.15rem; }
+.role-card .role-name { font-weight: 700; font-size: 0.9rem; }
+.role-card .role-email { font-size: 0.7rem; color: var(--muted); }
+
+@media (max-width: 900px) {
+    .auth-shell { grid-template-columns: 1fr; }
+    .auth-hero { display: none; }
+}
+
 /* ---------------------------------------------------------------- Tables */
 .table-wrap {
     overflow-x: auto;

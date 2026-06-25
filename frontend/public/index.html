@@ -7,32 +7,81 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <div class="login-page">
-        <div class="card login-card">
-            <h1>Campus Maintenance</h1>
-            <p class="subtitle">Complaint Management System</p>
+    <div class="auth-shell">
 
-            <div id="alert"></div>
+        <!-- Left: branded hero -->
+        <aside class="auth-hero">
+            <span class="orb orb-1"></span>
+            <span class="orb orb-2"></span>
+            <span class="orb orb-3"></span>
 
-            <div id="sessionBanner" style="display:none;margin-bottom:1rem;padding:0.75rem;background:var(--surface2);border-radius:6px;font-size:0.85rem;"></div>
-
-            <form id="loginForm">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="your.email@stu.edu" required>
+            <div class="auth-brand">
+                <div class="logo">🛠️</div>
+                <div>
+                    <div class="brand-name">Campus Maintenance</div>
+                    <div class="brand-sub">Complaint Management System</div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="width:100%">Sign In</button>
-            </form>
-
-            <div class="demo-users">
-                <strong>Quick demo login (click to switch):</strong>
-                <button type="button" class="btn btn-secondary btn-sm" style="width:100%;margin-top:0.5rem" onclick="quickLogin('hassan.r@stu.edu')">Student — hassan.r@stu.edu</button>
-                <button type="button" class="btn btn-secondary btn-sm" style="width:100%;margin-top:0.35rem" onclick="quickLogin('rashid.i@campus.edu')">Worker — rashid.i@campus.edu</button>
-                <button type="button" class="btn btn-secondary btn-sm" style="width:100%;margin-top:0.35rem" onclick="quickLogin('omar.s@campus.edu')">Supervisor — omar.s@campus.edu</button>
-                <button type="button" class="btn btn-secondary btn-sm" style="width:100%;margin-top:0.35rem" onclick="quickLogin('admin@campus.edu')">Admin — admin@campus.edu</button>
             </div>
-        </div>
+
+            <div class="auth-headline">
+                <h2>Fix issues <span class="grad">faster</span>,<br>track every <span class="grad">complaint</span>.</h2>
+                <p>A smart maintenance platform with SLA tracking, auto-escalation, worker performance scoring, and live dashboards.</p>
+            </div>
+
+            <div class="auth-features">
+                <div class="auth-feature"><span class="ic">⏱️</span> SLA deadlines &amp; auto-escalation</div>
+                <div class="auth-feature"><span class="ic">📊</span> Real-time admin dashboard</div>
+                <div class="auth-feature"><span class="ic">⭐</span> Worker performance scoring</div>
+                <div class="auth-feature"><span class="ic">🔁</span> Chronic issue detection</div>
+            </div>
+        </aside>
+
+        <!-- Right: login form -->
+        <main class="auth-panel">
+            <div class="card login-card">
+                <h1>Welcome back</h1>
+                <p class="subtitle">Sign in to continue to your portal</p>
+
+                <div id="alert"></div>
+                <div id="sessionBanner" style="display:none;margin-bottom:1rem;padding:0.85rem 1rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.85rem;"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email address</label>
+                        <input type="email" id="email" placeholder="your.email@stu.edu" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Sign In →</button>
+                </form>
+
+                <div class="divider">or quick demo login</div>
+
+                <div class="role-grid">
+                    <button type="button" class="role-card" onclick="quickLogin('hassan.r@stu.edu')">
+                        <span class="role-ic">🎓</span>
+                        <span class="role-name">Student</span>
+                        <span class="role-email">hassan.r@stu.edu</span>
+                    </button>
+                    <button type="button" class="role-card" onclick="quickLogin('rashid.i@campus.edu')">
+                        <span class="role-ic">🔧</span>
+                        <span class="role-name">Worker</span>
+                        <span class="role-email">rashid.i@campus.edu</span>
+                    </button>
+                    <button type="button" class="role-card" onclick="quickLogin('omar.s@campus.edu')">
+                        <span class="role-ic">🧑‍💼</span>
+                        <span class="role-name">Supervisor</span>
+                        <span class="role-email">omar.s@campus.edu</span>
+                    </button>
+                    <button type="button" class="role-card" onclick="quickLogin('admin@campus.edu')">
+                        <span class="role-ic">🛡️</span>
+                        <span class="role-name">Admin</span>
+                        <span class="role-email">admin@campus.edu</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+
     </div>
+
     <script src="/js/common.js"></script>
     <script src="/js/login.js"></script>
 </body>
