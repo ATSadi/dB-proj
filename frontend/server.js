@@ -230,7 +230,7 @@ app.post('/api/feedback', async (req, res) => {
 
         await db.execute(
             `INSERT INTO feedback (
-                feedback_id, complaint_id, student_id, rating, comment
+                feedback_id, complaint_id, student_id, rating, feedback_comment
              ) VALUES (
                 seq_feedback_id.NEXTVAL, :complaintId, :studentId, :rating, :comment
              )`,

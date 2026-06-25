@@ -176,7 +176,7 @@ BEGIN
     END IF;
 
     INSERT INTO feedback (
-        feedback_id, complaint_id, student_id, rating, comment
+        feedback_id, complaint_id, student_id, rating, feedback_comment
     ) VALUES (
         seq_feedback_id.NEXTVAL, p_complaint_id, p_student_id, p_rating, p_comment
     );

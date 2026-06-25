@@ -133,9 +133,9 @@ CREATE TABLE feedback (
     feedback_id   NUMBER(10)      NOT NULL,
     complaint_id  NUMBER          NOT NULL,
     student_id    NUMBER          NOT NULL,
-    rating        NUMBER(1)       NOT NULL,
-    comment       VARCHAR2(300),
-    submitted_at  TIMESTAMP       DEFAULT SYSTIMESTAMP NOT NULL,
+    rating            NUMBER(1)       NOT NULL,
+    feedback_comment  VARCHAR2(300),
+    submitted_at      TIMESTAMP       DEFAULT SYSTIMESTAMP NOT NULL,
 
     CONSTRAINT pk_feedback PRIMARY KEY (feedback_id),
     CONSTRAINT uq_feedback_complaint UNIQUE (complaint_id),

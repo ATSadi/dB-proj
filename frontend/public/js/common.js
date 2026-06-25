@@ -17,11 +17,17 @@ function logout() {
 function requireAuth(allowedRoles) {
     const user = getUser();
     if (!user) {
-        window.location.href = '/';
+        window.location.href = '/?login=1';
         return null;
     }
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        window.location.href = '/';
+        const routes = {
+            student: '/student.html',
+            worker: '/worker.html',
+            supervisor: '/admin.html',
+            admin: '/admin.html'
+        };
+        window.location.href = routes[user.role] || '/';
         return null;
     }
     return user;

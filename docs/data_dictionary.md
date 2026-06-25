@@ -113,7 +113,7 @@ Student satisfaction after complaint resolution.
 | `complaint_id` | `NUMBER` | FK → `COMPLAINTS`, UNIQUE, NOT NULL | One feedback record per complaint |
 | `student_id` | `NUMBER` | FK → `USERS`, NOT NULL | Student submitting feedback (must match complaint owner) |
 | `rating` | `NUMBER(1)` | NOT NULL, CHECK (1–5) | Star rating from 1 (poor) to 5 (excellent) |
-| `comment` | `VARCHAR2(300)` | NULL allowed | Optional written feedback |
+| `feedback_comment` | `VARCHAR2(300)` | NULL allowed | Optional written feedback |
 | `submitted_at` | `TIMESTAMP` | NOT NULL, DEFAULT `SYSTIMESTAMP` | When feedback was submitted |
 
 ---

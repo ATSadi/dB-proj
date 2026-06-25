@@ -74,7 +74,16 @@ dB proj/
 | 11 | Advanced queries *(this push)* |
 | 12 | Frontend (HTML/CSS/JS) + Node.js API *(this push)* |
 | 13 | Transaction management & exception handling *(this push)* |
-| 14 | Final polish, demo queries, screenshots |
+| 14 | Oracle setup guide, run_all.sql, demo queries *(this push)* |
+
+## Run the Project Locally
+
+**Full step-by-step guide:** [`docs/ORACLE_SETUP_GUIDE.md`](docs/ORACLE_SETUP_GUIDE.md)
+
+Quick start (SQL Developer):
+1. Connect to Oracle
+2. Run `sql/run_all.sql` (from the `sql/` folder)
+3. Run `sql/DEMO_QUERIES.sql` to demo for teacher
 
 ## Frontend (Push 12)
 
