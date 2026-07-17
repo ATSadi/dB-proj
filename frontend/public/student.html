@@ -9,18 +9,27 @@
 <body>
     <nav class="navbar" id="navbar"></nav>
     <div class="container">
+        <div class="page-header">
+            <div>
+                <h2>Student Portal</h2>
+                <p>Submit maintenance requests and track SLA progress</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="refreshBtn">Refresh</button>
+        </div>
+
         <div id="alert"></div>
+        <div class="stats-grid" id="studentStats"></div>
 
         <div class="card">
             <h2>Submit Complaint</h2>
             <form id="complaintForm">
                 <div class="grid-2">
                     <div class="form-group">
-                        <label>Location</label>
+                        <label for="locationId">Location</label>
                         <select id="locationId" required></select>
                     </div>
                     <div class="form-group">
-                        <label>Category</label>
+                        <label for="category">Category</label>
                         <select id="category" required>
                             <option value="electrical">Electrical</option>
                             <option value="plumbing">Plumbing</option>
@@ -31,25 +40,38 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Priority</label>
+                        <label for="priority">Priority</label>
                         <select id="priority" required>
-                            <option value="urgent">Urgent (4 hrs)</option>
-                            <option value="medium" selected>Medium (24 hrs)</option>
-                            <option value="low">Low (72 hrs)</option>
+                            <option value="urgent">Urgent (4 hrs SLA)</option>
+                            <option value="medium" selected>Medium (24 hrs SLA)</option>
+                            <option value="low">Low (72 hrs SLA)</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="description" placeholder="Describe the issue..." required></textarea>
+                    <label for="description">Description</label>
+                    <textarea id="description" maxlength="500" placeholder="Describe the issue clearly…" required></textarea>
+                    <small id="descCount" style="color:var(--faint);font-size:0.75rem;">0 / 500</small>
                 </div>
-                <button type="submit" class="btn btn-primary">Submit Complaint</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Submit Complaint</button>
             </form>
         </div>
 
         <div class="card">
             <h2>My Complaints</h2>
-            <div class="table-wrap">
+            <div class="toolbar">
+                <div class="filter-chips" id="statusFilters">
+                    <button type="button" class="chip active" data-status="">All</button>
+                    <button type="button" class="chip" data-status="submitted">Submitted</button>
+                    <button type="button" class="chip" data-status="assigned">Assigned</button>
+                    <button type="button" class="chip" data-status="in_progress">In progress</button>
+                    <button type="button" class="chip" data-status="resolved">Resolved</button>
+                    <button type="button" class="chip" data-status="closed">Closed</button>
+                </div>
+                <input type="search" id="searchBox" placeholder="Search category or location…" style="min-width:200px;flex:1;">
+            </div>
+
+            <div class="table-wrap table-desktop">
                 <table>
                     <thead>
                         <tr>
@@ -58,12 +80,36 @@
                             <th>Category</th>
                             <th>Priority</th>
                             <th>Status</th>
-                            <th>SLA Deadline</th>
+                            <th>SLA</th>
+                            <th>Worker</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="complaintsBody"></tbody>
                 </table>
+            </div>
+            <div class="complaint-cards" id="complaintsCards"></div>
+        </div>
+    </div>
+
+    <div class="modal-backdrop" id="feedbackModal">
+        <div class="modal">
+            <h3>Rate this resolution</h3>
+            <p class="modal-sub">Complaint #<span id="feedbackId"></span> — your feedback updates worker performance</p>
+            <div class="star-row" id="starRow">
+                <button type="button" class="star-btn" data-rating="1">1</button>
+                <button type="button" class="star-btn" data-rating="2">2</button>
+                <button type="button" class="star-btn" data-rating="3">3</button>
+                <button type="button" class="star-btn" data-rating="4">4</button>
+                <button type="button" class="star-btn" data-rating="5">5</button>
+            </div>
+            <div class="form-group">
+                <label for="feedbackComment">Comment (optional)</label>
+                <textarea id="feedbackComment" placeholder="What went well or could improve?"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" id="cancelFeedback">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitFeedback">Submit rating</button>
             </div>
         </div>
     </div>
