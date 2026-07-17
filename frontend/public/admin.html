@@ -9,89 +9,148 @@
 <body>
     <nav class="navbar" id="navbar"></nav>
     <div class="container">
-        <div id="alert"></div>
+        <div class="page-header">
+            <div>
+                <h2>Operations Dashboard</h2>
+                <p>Assign work, monitor SLA breaches, and generate monthly reports</p>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="refreshBtn">Refresh</button>
+        </div>
 
+        <div id="alert"></div>
         <div class="stats-grid" id="dashStats"></div>
 
-        <div class="grid-2">
-            <div class="card">
-                <h2>Assign Worker</h2>
-                <form id="assignForm">
-                    <div class="form-group">
-                        <label>Complaint (submitted)</label>
-                        <select id="assignComplaint" required></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Worker</label>
-                        <select id="assignWorker" required></select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Assign</button>
-                </form>
+        <div class="toolbar">
+            <div class="filter-chips" id="sectionTabs">
+                <button type="button" class="chip active" data-section="assign">Assign</button>
+                <button type="button" class="chip" data-section="queue">Complaint queue</button>
+                <button type="button" class="chip" data-section="overdue">Overdue</button>
+                <button type="button" class="chip" data-section="workers">Workers</button>
+                <button type="button" class="chip" data-section="chronic">Chronic</button>
+                <button type="button" class="chip" data-section="reports">Reports</button>
             </div>
+        </div>
 
-            <div class="card">
-                <h2>Generate Report</h2>
-                <form id="reportForm">
-                    <div class="grid-2">
+        <div id="section-assign" class="dash-section">
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Assign Worker</h2>
+                    <form id="assignForm">
                         <div class="form-group">
-                            <label>Month</label>
-                            <input type="number" id="reportMonth" min="1" max="12" value="3" required>
+                            <label for="assignComplaint">Complaint (submitted)</label>
+                            <select id="assignComplaint" required></select>
                         </div>
+                        <div id="complaintPreview" class="session-banner" hidden></div>
                         <div class="form-group">
-                            <label>Year</label>
-                            <input type="number" id="reportYear" min="2020" max="2030" value="2026" required>
+                            <label for="assignWorker">Worker</label>
+                            <select id="assignWorker" required></select>
                         </div>
+                        <button type="submit" class="btn btn-primary" id="assignBtn">Assign worker</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Generate Report</h2>
+                    <form id="reportForm">
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="reportMonth">Month</label>
+                                <input type="number" id="reportMonth" min="1" max="12" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="reportYear">Year</label>
+                                <input type="number" id="reportYear" min="2020" max="2030" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="reportBtn">Generate monthly report</button>
+                    </form>
+                    <div class="card" style="margin:1rem 0 0;box-shadow:none;" id="topCategoriesCard">
+                        <h2>Top categories (this month)</h2>
+                        <div id="topCategories"></div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Generate</button>
-                </form>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>Overdue Complaints</h2>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr><th>ID</th><th>Category</th><th>Priority</th><th>Hours Overdue</th><th>Location</th><th>Worker</th></tr>
-                    </thead>
-                    <tbody id="overdueBody"></tbody>
-                </table>
+        <div id="section-queue" class="dash-section" hidden>
+            <div class="card">
+                <h2>Complaint Queue</h2>
+                <div class="toolbar">
+                    <select id="queueStatus">
+                        <option value="">All statuses</option>
+                        <option value="submitted">Submitted</option>
+                        <option value="assigned">Assigned</option>
+                        <option value="in_progress">In progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                    <input type="search" id="queueSearch" placeholder="Search…" style="flex:1;min-width:160px;">
+                </div>
+                <div class="table-wrap table-desktop">
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Student</th><th>Location</th><th>Category</th><th>Priority</th><th>Status</th><th>Worker</th><th>SLA</th></tr>
+                        </thead>
+                        <tbody id="queueBody"></tbody>
+                    </table>
+                </div>
+                <div class="complaint-cards" id="queueCards"></div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>Worker Performance</h2>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr><th>Worker</th><th>Specialization</th><th>Score</th><th>Open</th><th>Completed</th><th>Overdue</th><th>Available</th></tr>
-                    </thead>
-                    <tbody id="workersBody"></tbody>
-                </table>
+        <div id="section-overdue" class="dash-section" hidden>
+            <div class="card">
+                <h2>Overdue Complaints</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Category</th><th>Priority</th><th>Hours Overdue</th><th>Location</th><th>Worker</th></tr>
+                        </thead>
+                        <tbody id="overdueBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>Chronic Issues</h2>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr><th>Location</th><th>Category</th><th>Count</th><th>Flagged</th></tr>
-                    </thead>
-                    <tbody id="chronicBody"></tbody>
-                </table>
+        <div id="section-workers" class="dash-section" hidden>
+            <div class="card">
+                <h2>Worker Performance</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Worker</th><th>Specialization</th><th>Score</th><th>Open</th><th>Completed</th><th>Overdue</th><th>Available</th></tr>
+                        </thead>
+                        <tbody id="workersBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div class="card">
-            <h2>Maintenance Reports</h2>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr><th>Month/Year</th><th>Total</th><th>Resolved</th><th>Avg Hrs</th><th>Total Cost</th></tr>
-                    </thead>
-                    <tbody id="reportsBody"></tbody>
-                </table>
+        <div id="section-chronic" class="dash-section" hidden>
+            <div class="card">
+                <h2>Chronic Issues</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Location</th><th>Category</th><th>Count</th><th>Flagged</th></tr>
+                        </thead>
+                        <tbody id="chronicBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-reports" class="dash-section" hidden>
+            <div class="card">
+                <h2>Maintenance Reports</h2>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>Month/Year</th><th>Total</th><th>Resolved</th><th>Avg Hrs</th><th>Total Cost</th></tr>
+                        </thead>
+                        <tbody id="reportsBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
