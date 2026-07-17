@@ -15,6 +15,31 @@ Students submit complaints (category + priority) tied to specific campus locatio
 | Frontend | HTML, CSS, JavaScript |
 | Diagrams | dbdiagram.io / draw.io |
 
+## Role Chain of Command
+
+| Role | Portal | Responsibilities |
+|------|--------|------------------|
+| **Student** | `/student.html` | Submit complaints, track SLA, rate resolved work |
+| **Worker** | `/worker.html` | Start/resolve assigned jobs, toggle availability |
+| **Supervisor** | `/admin.html` | Assign workers, watch overdue & chronic issues |
+| **Admin** | `/admin.html` | Full dashboard, performance views, monthly reports |
+
+Workflow: **Student submits → Supervisor assigns → Worker resolves → Student rates → Admin reports**
+
+## Demo Accounts (seed data)
+
+Sign in with email only (no password in demo mode):
+
+| Role | Email |
+|------|-------|
+| Student | `hassan.r@stu.edu` |
+| Worker | `rashid.i@campus.edu` |
+| Supervisor | `omar.s@campus.edu` |
+| Admin | `admin@campus.edu` |
+
+Other students: `sana.m@stu.edu`, `bilal.a@stu.edu`, `zainab.h@stu.edu`  
+Other workers: `kamran.s@campus.edu`, `nadia.f@campus.edu`, `imran.b@campus.edu`
+
 ## Features
 
 ### Core
@@ -30,7 +55,8 @@ Students submit complaints (category + priority) tied to specific campus locatio
 - **Complaint audit log** — every status change recorded (trigger-based)
 - **Room/location registry** — building → floor → room
 - **Recurring complaint detection** — 3+ same category at same location → chronic issue flag
-- **Admin dashboard views** — top categories, slowest/overloaded workers
+- **Admin dashboard** — tabs for assign, queue, overdue, workers, chronic, reports
+- **Role-based portals** — session guards, demo quick-login, mobile-responsive UI
 - **Budget tracking** — repair cost logged per resolved assignment
 
 ## Project Structure
@@ -57,43 +83,16 @@ dB proj/
 | Column definitions | [`docs/data_dictionary.md`](docs/data_dictionary.md) |
 | PNG export (optional) | Import `erd.dbml` at [dbdiagram.io](https://dbdiagram.io) → Export → `assets/erd.png` |
 
-## Development Plan (14 Pushes)
-
-| Push | Deliverable |
-|------|-------------|
-| 1 | Project setup & README *(this push)* |
-| 2 | ERD & schema design document *(this push)* |
-| 3 | DDL: core tables (USERS, LOCATIONS, COMPLAINTS) *(this push)* |
-| 4 | DDL: supporting tables + sequences *(this push)* |
-| 5 | DML: seed data *(this push)* |
-| 6 | Triggers (Part 1): SLA, status log, worker availability *(this push)* |
-| 7 | Triggers (Part 2): feedback score, chronic issue detection *(this push)* |
-| 8 | Stored procedures *(this push)* |
-| 9 | Functions *(this push)* |
-| 10 | Views *(this push)* |
-| 11 | Advanced queries *(this push)* |
-| 12 | Frontend (HTML/CSS/JS) + Node.js API *(this push)* |
-| 13 | Transaction management & exception handling *(this push)* |
-| 14 | Oracle setup guide, run_all.sql, demo queries *(this push)* |
-
 ## Run the Project Locally
 
 **Full step-by-step guide:** [`docs/ORACLE_SETUP_GUIDE.md`](docs/ORACLE_SETUP_GUIDE.md)
 
-Quick start (SQL Developer):
-1. Connect to Oracle
+### Database
+1. Connect to Oracle (SQL Developer)
 2. Run `sql/run_all.sql` (from the `sql/` folder)
-3. Run `sql/DEMO_QUERIES.sql` to demo for teacher
+3. Optionally run `sql/DEMO_QUERIES.sql` for viva demos
 
-## Frontend (Push 12)
-
-| Page | Role | Features |
-|------|------|----------|
-| `/` | All | Login by email, role-based redirect |
-| `/student.html` | Student | Submit complaint, view status, submit feedback |
-| `/worker.html` | Worker | View assignments, update status |
-| `/admin.html` | Admin/Supervisor | Dashboard, assign workers, reports |
-
+### Frontend + API
 ```bash
 cd frontend
 copy .env.example .env    # edit with Oracle credentials
@@ -102,13 +101,12 @@ npm start
 # Open http://localhost:3000
 ```
 
-
-1. Run DDL scripts in order: `sql/ddl/01_create_tables.sql` → `03_sequences.sql`
-2. Run DML: `sql/dml/01_seed_data.sql`
-3. Run PL/SQL: `sql/plsql/01_triggers.sql` through `06_transactions.sql`
-4. Configure Oracle connection in `frontend/.env`
-5. Start API: `cd frontend && npm install && npm start`
-6. Open `http://localhost:3000`
+| Page | Role | Features |
+|------|------|----------|
+| `/` | All | Login / demo accounts / role chain |
+| `/student.html` | Student | Submit, filter, search, rate via modal |
+| `/worker.html` | Worker | Active/done filters, SLA urgency, availability |
+| `/admin.html` | Admin/Supervisor | Assign preview, queue, overdue, reports |
 
 ## Team / Course
 
