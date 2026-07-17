@@ -201,6 +201,43 @@ app.get('/api/workers', async (_req, res) => {
     }
 });
 
+app.patch('/api/workers/:id/availability', async (req, res) => {
+    try {
+        const workerId = Number(req.params.id);
+        const { is_available } = req.body;
+        if (!['Y', 'N'].includes(is_available)) {
+            return res.status(400).json({ error: 'is_available must be Y or N' });
+        }
+
+        await db.execute(
+            `UPDATE workers SET is_available = :isAvailable WHERE worker_id = :workerId`,
+            { isAvailable: is_available, workerId }
+        );
+
+        res.json({ success: true, is_available });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/complaints/:id/status-log', async (req, res) => {
+    try {
+        const complaintId = Number(req.params.id);
+        const result = await db.execute(
+            `SELECT l.log_id, l.complaint_id, l.old_status, l.new_status, l.changed_at,
+                    u.name AS changed_by_name
+             FROM status_log l
+             LEFT JOIN users u ON u.user_id = l.changed_by
+             WHERE l.complaint_id = :complaintId
+             ORDER BY l.changed_at ASC`,
+            { complaintId }
+        );
+        res.json(mapRows(result.rows));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 app.post('/api/assignments', async (req, res) => {
     try {
         const { complaint_id, worker_id, supervisor_id } = req.body;

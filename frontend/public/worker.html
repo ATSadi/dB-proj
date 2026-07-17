@@ -9,13 +9,31 @@
 <body>
     <nav class="navbar" id="navbar"></nav>
     <div class="container">
-        <div id="alert"></div>
+        <div class="page-header">
+            <div>
+                <h2>Worker Portal</h2>
+                <p>Manage assigned jobs and keep SLA on track</p>
+            </div>
+            <div class="toolbar" style="margin:0;">
+                <button type="button" class="btn btn-secondary btn-sm" id="refreshBtn">Refresh</button>
+                <button type="button" class="btn btn-primary btn-sm" id="toggleAvailBtn">Toggle availability</button>
+            </div>
+        </div>
 
+        <div id="alert"></div>
         <div class="stats-grid" id="workerStats"></div>
 
         <div class="card">
             <h2>Assigned Complaints</h2>
-            <div class="table-wrap">
+            <div class="toolbar">
+                <div class="filter-chips" id="jobFilters">
+                    <button type="button" class="chip active" data-filter="active">Active</button>
+                    <button type="button" class="chip" data-filter="done">Completed</button>
+                    <button type="button" class="chip" data-filter="all">All</button>
+                </div>
+            </div>
+
+            <div class="table-wrap table-desktop">
                 <table>
                     <thead>
                         <tr>
@@ -25,12 +43,14 @@
                             <th>Priority</th>
                             <th>Status</th>
                             <th>SLA</th>
-                            <th>Update Status</th>
+                            <th>Student</th>
+                            <th>Update</th>
                         </tr>
                     </thead>
                     <tbody id="complaintsBody"></tbody>
                 </table>
             </div>
+            <div class="complaint-cards" id="complaintsCards"></div>
         </div>
     </div>
 
