@@ -9,14 +9,13 @@
 <body>
     <div class="auth-shell">
 
-        <!-- Left: branded hero -->
         <aside class="auth-hero">
             <span class="orb orb-1"></span>
             <span class="orb orb-2"></span>
             <span class="orb orb-3"></span>
 
             <div class="auth-brand">
-                <div class="logo">🛠️</div>
+                <div class="logo">CM</div>
                 <div>
                     <div class="brand-name">Campus Maintenance</div>
                     <div class="brand-sub">Complaint Management System</div>
@@ -25,58 +24,73 @@
 
             <div class="auth-headline">
                 <h2>Fix issues <span class="grad">faster</span>,<br>track every <span class="grad">complaint</span>.</h2>
-                <p>A smart maintenance platform with SLA tracking, auto-escalation, worker performance scoring, and live dashboards.</p>
+                <p>Role-based portals with SLA tracking, auto-escalation, worker scoring, and supervisor oversight.</p>
             </div>
 
             <div class="auth-features">
-                <div class="auth-feature"><span class="ic">⏱️</span> SLA deadlines &amp; auto-escalation</div>
-                <div class="auth-feature"><span class="ic">📊</span> Real-time admin dashboard</div>
-                <div class="auth-feature"><span class="ic">⭐</span> Worker performance scoring</div>
-                <div class="auth-feature"><span class="ic">🔁</span> Chronic issue detection</div>
+                <div class="auth-feature"><span class="ic">1</span> Student submits complaint</div>
+                <div class="auth-feature"><span class="ic">2</span> Supervisor assigns a worker</div>
+                <div class="auth-feature"><span class="ic">3</span> Worker updates progress to resolved</div>
+                <div class="auth-feature"><span class="ic">4</span> Student rates · Admin reviews reports</div>
             </div>
         </aside>
 
-        <!-- Right: login form -->
         <main class="auth-panel">
             <div class="card login-card">
                 <h1>Welcome back</h1>
-                <p class="subtitle">Sign in to continue to your portal</p>
+                <p class="subtitle">Sign in with your campus email to open your role portal</p>
 
                 <div id="alert"></div>
-                <div id="sessionBanner" style="display:none;margin-bottom:1rem;padding:0.85rem 1rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.85rem;"></div>
+                <div id="sessionBanner" class="session-banner" hidden></div>
 
                 <form id="loginForm">
                     <div class="form-group">
-                        <label for="email">Email address</label>
-                        <input type="email" id="email" placeholder="your.email@stu.edu" required>
+                        <label for="email">Campus email</label>
+                        <input type="email" id="email" placeholder="your.email@stu.edu" autocomplete="username" required>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block">Sign In →</button>
+                    <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Sign In</button>
                 </form>
 
-                <div class="divider">or quick demo login</div>
+                <div class="divider">quick demo accounts</div>
 
-                <div class="role-grid">
-                    <button type="button" class="role-card" onclick="quickLogin('hassan.r@stu.edu')">
-                        <span class="role-ic">🎓</span>
+                <p class="demo-hint">Pick a role to experience the full workflow chain. No password — demo uses email lookup against seed users.</p>
+
+                <div class="role-grid" id="demoGrid">
+                    <button type="button" class="role-card" data-email="hassan.r@stu.edu">
+                        <span class="role-ic">ST</span>
                         <span class="role-name">Student</span>
                         <span class="role-email">hassan.r@stu.edu</span>
+                        <span class="role-desc">Submit &amp; rate complaints</span>
                     </button>
-                    <button type="button" class="role-card" onclick="quickLogin('rashid.i@campus.edu')">
-                        <span class="role-ic">🔧</span>
+                    <button type="button" class="role-card" data-email="rashid.i@campus.edu">
+                        <span class="role-ic">WK</span>
                         <span class="role-name">Worker</span>
                         <span class="role-email">rashid.i@campus.edu</span>
+                        <span class="role-desc">Start &amp; resolve jobs</span>
                     </button>
-                    <button type="button" class="role-card" onclick="quickLogin('omar.s@campus.edu')">
-                        <span class="role-ic">🧑‍💼</span>
+                    <button type="button" class="role-card" data-email="omar.s@campus.edu">
+                        <span class="role-ic">SV</span>
                         <span class="role-name">Supervisor</span>
                         <span class="role-email">omar.s@campus.edu</span>
+                        <span class="role-desc">Assign workers &amp; track SLA</span>
                     </button>
-                    <button type="button" class="role-card" onclick="quickLogin('admin@campus.edu')">
-                        <span class="role-ic">🛡️</span>
+                    <button type="button" class="role-card" data-email="admin@campus.edu">
+                        <span class="role-ic">AD</span>
                         <span class="role-name">Admin</span>
                         <span class="role-email">admin@campus.edu</span>
+                        <span class="role-desc">Dashboard &amp; monthly reports</span>
                     </button>
                 </div>
+
+                <details class="chain-details">
+                    <summary>Role chain of command</summary>
+                    <ol class="chain-list">
+                        <li><strong>Student</strong> — files complaints, gives feedback after resolution</li>
+                        <li><strong>Supervisor</strong> — assigns workers, monitors overdue / chronic issues</li>
+                        <li><strong>Worker</strong> — executes jobs (assigned → in progress → resolved)</li>
+                        <li><strong>Admin</strong> — full oversight, performance views, generate reports</li>
+                    </ol>
+                </details>
             </div>
         </main>
 

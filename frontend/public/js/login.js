@@ -1,58 +1,70 @@
-async function doLogin(email) {
+async function doLogin(email, triggerBtn) {
     const alertEl = document.getElementById('alert');
-    const { user } = await api('/login', {
-        method: 'POST',
-        body: JSON.stringify({ email })
-    });
+    if (triggerBtn) setButtonLoading(triggerBtn, true, 'Signing in…');
 
-    setUser(user);
+    try {
+        const { user } = await api('/login', {
+            method: 'POST',
+            body: JSON.stringify({ email })
+        });
 
-    const routes = {
-        student: '/student.html',
-        worker: '/worker.html',
-        supervisor: '/admin.html',
-        admin: '/admin.html'
-    };
-    window.location.href = routes[user.role] || '/';
+        setUser(user);
+        window.location.href = ROLE_ROUTES[user.role] || '/';
+    } finally {
+        if (triggerBtn) setButtonLoading(triggerBtn, false);
+    }
 }
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('email').value.trim();
     const alertEl = document.getElementById('alert');
+    const btn = document.getElementById('loginBtn');
+
+    if (!email.includes('@')) {
+        showAlert(alertEl, 'Enter a valid campus email address');
+        return;
+    }
 
     try {
-        await doLogin(email);
+        await doLogin(email, btn);
     } catch (err) {
         showAlert(alertEl, err.message);
     }
 });
 
-window.quickLogin = async (email) => {
-    sessionStorage.removeItem('user');
+document.getElementById('demoGrid').addEventListener('click', async (e) => {
+    const card = e.target.closest('.role-card');
+    if (!card) return;
+
+    const email = card.dataset.email;
     document.getElementById('email').value = email;
+    sessionStorage.removeItem('user');
+
     const alertEl = document.getElementById('alert');
     try {
+        card.classList.add('is-loading');
+        card.disabled = true;
         await doLogin(email);
     } catch (err) {
         showAlert(alertEl, err.message);
+        card.classList.remove('is-loading');
+        card.disabled = false;
     }
-};
+});
 
-// Show who is logged in — do NOT auto-redirect (allows switching accounts)
 const existing = getUser();
 const sessionBanner = document.getElementById('sessionBanner');
 if (existing && sessionBanner) {
-    const routes = {
-        student: '/student.html',
-        worker: '/worker.html',
-        supervisor: '/admin.html',
-        admin: '/admin.html'
-    };
+    sessionBanner.hidden = false;
     sessionBanner.innerHTML = `
-        <p>Currently logged in as <strong>${existing.name}</strong> (${existing.role}).
-        <a href="${routes[existing.role] || '/'}">Go to your portal</a>
-        or logout to switch account.</p>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="logout()" style="margin-top:0.5rem">Logout</button>`;
-    sessionBanner.style.display = 'block';
+        <div class="session-banner-body">
+            <p>Signed in as <strong>${escapeHtml(existing.name)}</strong>
+            <span class="badge badge-assigned">${ROLE_LABELS[existing.role] || existing.role}</span></p>
+            <div class="session-actions">
+                <a class="btn btn-primary btn-sm" href="${ROLE_ROUTES[existing.role] || '/'}">Continue to portal</a>
+                <button type="button" class="btn btn-secondary btn-sm" id="switchLogout">Switch account</button>
+            </div>
+        </div>`;
+    document.getElementById('switchLogout').addEventListener('click', logout);
 }
