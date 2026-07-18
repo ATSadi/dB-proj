@@ -36,6 +36,10 @@ CREATE TABLE users (
     roll_no   VARCHAR2(20),
     email     VARCHAR2(100)   NOT NULL,
     role      VARCHAR2(20)    NOT NULL,
+    password_hash          VARCHAR2(255),
+    reset_token_hash       VARCHAR2(64),
+    reset_token_expires    TIMESTAMP,
+    password_changed_at    TIMESTAMP DEFAULT SYSTIMESTAMP,
 
     CONSTRAINT pk_users PRIMARY KEY (user_id),
     CONSTRAINT uq_users_roll_no UNIQUE (roll_no),
@@ -49,6 +53,7 @@ COMMENT ON TABLE users IS 'All system actors: students, workers, supervisors, an
 COMMENT ON COLUMN users.user_id  IS 'Surrogate PK; populated via seq_user_id (Push 4)';
 COMMENT ON COLUMN users.roll_no  IS 'Student/worker roll number; NULL allowed for admin';
 COMMENT ON COLUMN users.role     IS 'Access role: student | worker | supervisor | admin';
+COMMENT ON COLUMN users.password_hash IS 'Scrypt password hash; plaintext passwords are never stored';
 
 -- ----------------------------------------------------------------------------
 -- LOCATIONS

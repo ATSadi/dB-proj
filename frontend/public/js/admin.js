@@ -6,18 +6,120 @@ const alertEl = document.getElementById('alert');
 
 let queueComplaints = [];
 let submitted = [];
+let directoryData = { students: [], workers: [], locations: [] };
+let csvStudents = [];
+
+if (user.role !== 'admin') {
+    document.querySelectorAll('.admin-only').forEach(el => el.remove());
+}
 
 const now = new Date();
 document.getElementById('reportMonth').value = now.getMonth() + 1;
 document.getElementById('reportYear').value = now.getFullYear();
 
 function showSection(name) {
+    if (name === 'directory' && user.role !== 'admin') return;
     document.querySelectorAll('.dash-section').forEach(el => {
         el.hidden = el.id !== `section-${name}`;
     });
     document.querySelectorAll('#sectionTabs .chip').forEach(chip => {
         chip.classList.toggle('active', chip.dataset.section === name);
     });
+}
+
+function renderDirectory() {
+    if (user.role !== 'admin') return;
+    const { students, workers, locations } = directoryData;
+    const query = document.getElementById('studentSearch').value.trim().toLowerCase();
+    const shownStudents = students.filter(student =>
+        `${student.name} ${student.roll_no} ${student.email}`.toLowerCase().includes(query)
+    );
+
+    document.getElementById('directoryStats').innerHTML = `
+        <div class="stat-card"><div class="value">${students.length}</div><div class="label">Students</div></div>
+        <div class="stat-card accent-success"><div class="value">${workers.length}</div><div class="label">Workers</div></div>
+        <div class="stat-card"><div class="value">${locations.length}</div><div class="label">Locations</div></div>`;
+
+    document.getElementById('studentsBody').innerHTML = shownStudents.length
+        ? shownStudents.map(student => `
+            <tr>
+                <td>#${student.user_id}</td>
+                <td>${escapeHtml(student.name)}</td>
+                <td>${escapeHtml(student.roll_no)}</td>
+                <td>${escapeHtml(student.email)}</td>
+            </tr>`).join('')
+        : '<tr><td colspan="4" class="empty-state">No students found</td></tr>';
+
+    document.getElementById('directoryWorkersBody').innerHTML = workers.length
+        ? workers.map(worker => `
+            <tr>
+                <td>${escapeHtml(worker.name)}</td>
+                <td>${escapeHtml(worker.specialization)}</td>
+                <td>${worker.is_available === 'Y' ? 'Available' : 'Busy'}</td>
+            </tr>`).join('')
+        : '<tr><td colspan="3" class="empty-state">No workers</td></tr>';
+
+    document.getElementById('directoryLocationsBody').innerHTML = locations.length
+        ? locations.map(location => `
+            <tr>
+                <td>${escapeHtml(location.building)} · ${escapeHtml(location.floor)} / ${escapeHtml(location.room_no)}</td>
+                <td>${escapeHtml(location.location_type)}</td>
+            </tr>`).join('')
+        : '<tr><td colspan="2" class="empty-state">No locations</td></tr>';
+}
+
+async function loadDirectory() {
+    if (user.role !== 'admin') return;
+    directoryData = await api('/admin/directory');
+    renderDirectory();
+}
+
+function parseCsv(text) {
+    const records = [];
+    let record = [];
+    let field = '';
+    let quoted = false;
+
+    for (let i = 0; i < text.length; i += 1) {
+        const char = text[i];
+        const next = text[i + 1];
+        if (char === '"' && quoted && next === '"') {
+            field += '"';
+            i += 1;
+        } else if (char === '"') {
+            quoted = !quoted;
+        } else if (char === ',' && !quoted) {
+            record.push(field.trim());
+            field = '';
+        } else if ((char === '\n' || char === '\r') && !quoted) {
+            if (char === '\r' && next === '\n') i += 1;
+            record.push(field.trim());
+            field = '';
+            if (record.some(value => value !== '')) records.push(record);
+            record = [];
+        } else {
+            field += char;
+        }
+    }
+    record.push(field.trim());
+    if (record.some(value => value !== '')) records.push(record);
+
+    if (records.length < 2) throw new Error('CSV must include a header and at least one student');
+    const headers = records[0].map(value => value.replace(/^\uFEFF/, '').toLowerCase());
+    const required = ['name', 'roll_no', 'email'];
+    required.forEach(header => {
+        if (!headers.includes(header)) throw new Error(`Missing CSV column: ${header}`);
+    });
+
+    return records.slice(1).map(row => {
+        const item = {};
+        headers.forEach((header, index) => { item[header] = row[index] || ''; });
+        return {
+            name: item.name.trim(),
+            roll_no: item.roll_no.trim(),
+            email: item.email.trim()
+        };
+    }).filter(row => row.name || row.roll_no || row.email);
 }
 
 function renderQueue() {
@@ -163,6 +265,9 @@ document.getElementById('sectionTabs').addEventListener('click', (e) => {
     const chip = e.target.closest('.chip');
     if (!chip) return;
     showSection(chip.dataset.section);
+    if (chip.dataset.section === 'directory') {
+        loadDirectory().catch(err => showAlert(alertEl, err.message));
+    }
 });
 
 document.getElementById('assignComplaint').addEventListener('change', updateComplaintPreview);
@@ -218,6 +323,141 @@ document.getElementById('reportForm').addEventListener('submit', async (e) => {
         setButtonLoading(btn, false);
     }
 });
+
+if (user.role === 'admin') {
+    document.getElementById('studentSearch').addEventListener('input', renderDirectory);
+
+    document.getElementById('studentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('studentBtn');
+        try {
+            setButtonLoading(btn, true, 'Adding…');
+            await api('/admin/students', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: document.getElementById('studentName').value,
+                    roll_no: document.getElementById('studentRoll').value,
+                    email: document.getElementById('studentEmail').value
+                })
+            });
+            e.target.reset();
+            showAlert(alertEl, 'Student account added', 'success');
+            await loadDirectory();
+        } catch (err) {
+            showAlert(alertEl, err.message);
+        } finally {
+            setButtonLoading(btn, false);
+        }
+    });
+
+    document.getElementById('workerForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('workerBtn');
+        try {
+            setButtonLoading(btn, true, 'Adding…');
+            await api('/admin/workers', {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: document.getElementById('workerName').value,
+                    roll_no: document.getElementById('workerRoll').value,
+                    email: document.getElementById('workerEmail').value,
+                    specialization: document.getElementById('workerSpecialization').value
+                })
+            });
+            e.target.reset();
+            showAlert(alertEl, 'Worker account and profile added', 'success');
+            await Promise.all([loadDirectory(), loadDashboard()]);
+        } catch (err) {
+            showAlert(alertEl, err.message);
+        } finally {
+            setButtonLoading(btn, false);
+        }
+    });
+
+    document.getElementById('locationForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('locationBtn');
+        try {
+            setButtonLoading(btn, true, 'Adding…');
+            await api('/admin/locations', {
+                method: 'POST',
+                body: JSON.stringify({
+                    building: document.getElementById('locationBuilding').value,
+                    floor: document.getElementById('locationFloor').value,
+                    room_no: document.getElementById('locationRoom').value,
+                    location_type: document.getElementById('locationType').value
+                })
+            });
+            e.target.reset();
+            showAlert(alertEl, 'Campus location added', 'success');
+            await loadDirectory();
+        } catch (err) {
+            showAlert(alertEl, err.message);
+        } finally {
+            setButtonLoading(btn, false);
+        }
+    });
+
+    document.getElementById('studentCsv').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        const preview = document.getElementById('csvPreview');
+        const importBtn = document.getElementById('importCsvBtn');
+        csvStudents = [];
+        importBtn.disabled = true;
+        preview.hidden = true;
+        document.getElementById('csvResult').innerHTML = '';
+        if (!file) return;
+
+        try {
+            csvStudents = parseCsv(await file.text());
+            if (csvStudents.length > 2000) throw new Error('CSV is limited to 2,000 students');
+            preview.hidden = false;
+            preview.innerHTML = `<strong>${csvStudents.length} students ready</strong><br>
+                <span style="color:var(--muted)">First row: ${escapeHtml(csvStudents[0]?.name || '—')} · ${escapeHtml(csvStudents[0]?.roll_no || '—')}</span>`;
+            importBtn.disabled = csvStudents.length === 0;
+        } catch (err) {
+            showAlert(alertEl, err.message);
+        }
+    });
+
+    document.getElementById('importCsvBtn').addEventListener('click', async () => {
+        if (!csvStudents.length) return;
+        const btn = document.getElementById('importCsvBtn');
+        try {
+            setButtonLoading(btn, true, 'Importing…');
+            const result = await api('/admin/students/bulk', {
+                method: 'POST',
+                body: JSON.stringify({ students: csvStudents })
+            });
+            const errors = result.errors.slice(0, 5).map(item =>
+                `<li>Row ${item.row}: ${escapeHtml(item.email)} — ${escapeHtml(item.error)}</li>`
+            ).join('');
+            document.getElementById('csvResult').innerHTML = `
+                <div class="alert ${result.failed ? 'alert-error' : 'alert-success'}">
+                    Inserted ${result.inserted} of ${result.total}; ${result.failed} failed.
+                </div>
+                ${errors ? `<ul class="chain-list">${errors}</ul>` : ''}`;
+            csvStudents = [];
+            document.getElementById('studentCsv').value = '';
+            document.getElementById('csvPreview').hidden = true;
+            await loadDirectory();
+        } catch (err) {
+            showAlert(alertEl, err.message);
+        } finally {
+            setButtonLoading(btn, false);
+            btn.disabled = true;
+        }
+    });
+
+    document.getElementById('downloadTemplateBtn').addEventListener('click', () => {
+        const content = 'name,roll_no,email\nJohn Student,STU2026001,john.student@stu.edu\nJane Student,STU2026002,jane.student@stu.edu\n';
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(new Blob([content], { type: 'text/csv' }));
+        link.download = 'student-import-template.csv';
+        link.click();
+        URL.revokeObjectURL(link.href);
+    });
+}
 
 showSection('assign');
 loadDashboard().catch(err => showAlert(alertEl, err.message));

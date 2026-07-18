@@ -19,18 +19,26 @@ function getUser() {
     return data ? JSON.parse(data) : null;
 }
 
-function setUser(user) {
+function getToken() {
+    return sessionStorage.getItem('sessionToken');
+}
+
+function setUser(user, token) {
     sessionStorage.setItem('user', JSON.stringify(user));
+    if (token) sessionStorage.setItem('sessionToken', token);
 }
 
 function logout() {
     sessionStorage.removeItem('user');
+    sessionStorage.removeItem('sessionToken');
     window.location.href = '/';
 }
 
 function requireAuth(allowedRoles) {
     const user = getUser();
-    if (!user) {
+    if (!user || !getToken()) {
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('sessionToken');
         window.location.href = '/?login=1';
         return null;
     }
@@ -42,8 +50,18 @@ function requireAuth(allowedRoles) {
 }
 
 async function api(path, options = {}) {
+    const user = getUser();
+    const token = getToken();
     const res = await fetch(API + path, {
-        headers: { 'Content-Type': 'application/json', ...options.headers },
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            ...(user ? {
+                'X-User-Id': String(user.user_id),
+                'X-User-Role': user.role
+            } : {}),
+            ...options.headers
+        },
         ...options
     });
     const data = await res.json().catch(() => ({}));

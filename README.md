@@ -28,7 +28,7 @@ Workflow: **Student submits → Supervisor assigns → Worker resolves → Stude
 
 ## Demo Accounts (seed data)
 
-Sign in with email only (no password in demo mode):
+Sign in with the account email and the default demo password: `Password123`.
 
 | Role | Email |
 |------|-------|

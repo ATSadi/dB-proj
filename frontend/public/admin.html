@@ -28,6 +28,7 @@
                 <button type="button" class="chip" data-section="workers">Workers</button>
                 <button type="button" class="chip" data-section="chronic">Chronic</button>
                 <button type="button" class="chip" data-section="reports">Reports</button>
+                <button type="button" class="chip admin-only" data-section="directory">Directory</button>
             </div>
         </div>
 
@@ -150,6 +151,155 @@
                         </thead>
                         <tbody id="reportsBody"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-directory" class="dash-section admin-only" hidden>
+            <div class="page-header">
+                <div>
+                    <h2>Directory Management</h2>
+                    <p>Admin-only controls for student accounts, workers, and campus locations</p>
+                </div>
+            </div>
+
+            <div class="stats-grid" id="directoryStats"></div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Add Student</h2>
+                    <p class="modal-sub">Initial password: <strong>Password123</strong></p>
+                    <form id="studentForm">
+                        <div class="form-group">
+                            <label for="studentName">Full name</label>
+                            <input id="studentName" maxlength="100" required>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="studentRoll">Roll number</label>
+                                <input id="studentRoll" maxlength="20" placeholder="STU2026001" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentEmail">Email</label>
+                                <input type="email" id="studentEmail" maxlength="100" placeholder="student@stu.edu" required>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="studentBtn">Add student</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Bulk Import Students (CSV)</h2>
+                    <p class="modal-sub">Required columns: <code>name,roll_no,email</code>. Maximum 2,000 rows. Initial password: <strong>Password123</strong>.</p>
+                    <div class="form-group">
+                        <label for="studentCsv">CSV file</label>
+                        <input type="file" id="studentCsv" accept=".csv,text/csv">
+                    </div>
+                    <div id="csvPreview" class="session-banner" hidden></div>
+                    <div class="toolbar">
+                        <button type="button" class="btn btn-primary" id="importCsvBtn" disabled>Import students</button>
+                        <button type="button" class="btn btn-secondary" id="downloadTemplateBtn">Download template</button>
+                    </div>
+                    <div id="csvResult"></div>
+                </div>
+
+                <div class="card">
+                    <h2>Add Worker</h2>
+                    <p class="modal-sub">Initial password: <strong>Password123</strong></p>
+                    <form id="workerForm">
+                        <div class="form-group">
+                            <label for="workerName">Full name</label>
+                            <input id="workerName" maxlength="100" required>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="workerRoll">Worker ID</label>
+                                <input id="workerRoll" maxlength="20" placeholder="WRK306" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="workerEmail">Email</label>
+                                <input type="email" id="workerEmail" maxlength="100" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="workerSpecialization">Specialization</label>
+                            <select id="workerSpecialization" required>
+                                <option value="electrical">Electrical</option>
+                                <option value="plumbing">Plumbing</option>
+                                <option value="furniture">Furniture</option>
+                                <option value="it">IT</option>
+                                <option value="cleaning">Cleaning</option>
+                                <option value="other">General / Other</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="workerBtn">Add worker</button>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h2>Add Location</h2>
+                    <form id="locationForm">
+                        <div class="form-group">
+                            <label for="locationBuilding">Building</label>
+                            <input id="locationBuilding" maxlength="50" placeholder="Engineering Block" required>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label for="locationFloor">Floor</label>
+                                <input id="locationFloor" maxlength="10" placeholder="2" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="locationRoom">Room</label>
+                                <input id="locationRoom" maxlength="20" placeholder="E-201" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="locationType">Type</label>
+                            <select id="locationType" required>
+                                <option value="classroom">Classroom</option>
+                                <option value="lab">Lab</option>
+                                <option value="hostel">Hostel</option>
+                                <option value="office">Office</option>
+                                <option value="washroom">Washroom</option>
+                                <option value="corridor">Corridor</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" id="locationBtn">Add location</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Students</h2>
+                <div class="toolbar">
+                    <input type="search" id="studentSearch" placeholder="Search students…" style="flex:1;min-width:180px;">
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>ID</th><th>Name</th><th>Roll</th><th>Email</th></tr></thead>
+                        <tbody id="studentsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Worker Directory</h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Name</th><th>Specialization</th><th>Status</th></tr></thead>
+                            <tbody id="directoryWorkersBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Location Directory</h2>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Building / Room</th><th>Type</th></tr></thead>
+                            <tbody id="directoryLocationsBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

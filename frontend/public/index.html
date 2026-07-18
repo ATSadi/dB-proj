@@ -48,12 +48,51 @@
                         <label for="email">Campus email</label>
                         <input type="email" id="email" placeholder="your.email@stu.edu" autocomplete="username" required>
                     </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="password-wrap">
+                            <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password" required>
+                            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Show password">Show</button>
+                        </div>
+                    </div>
+                    <div class="auth-form-links">
+                        <button type="button" class="text-btn" id="forgotToggle">Forgot password?</button>
+                    </div>
                     <button type="submit" class="btn btn-primary btn-block" id="loginBtn">Sign In</button>
                 </form>
 
+                <section class="reset-panel" id="resetPanel" hidden>
+                    <div class="divider">reset password</div>
+                    <form id="forgotForm">
+                        <div class="form-group">
+                            <label for="resetEmail">Account email</label>
+                            <input type="email" id="resetEmail" placeholder="your.email@stu.edu" required>
+                        </div>
+                        <button class="btn btn-secondary btn-block" id="sendCodeBtn">Get reset code</button>
+                    </form>
+
+                    <form id="resetForm" hidden>
+                        <div id="resetCodeNotice" class="session-banner"></div>
+                        <div class="form-group">
+                            <label for="resetCode">6-digit reset code</label>
+                            <input id="resetCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">New password</label>
+                            <input type="password" id="newPassword" minlength="8" maxlength="128" autocomplete="new-password" required>
+                            <small class="field-hint">At least 8 characters, including a letter and number.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm new password</label>
+                            <input type="password" id="confirmPassword" minlength="8" maxlength="128" autocomplete="new-password" required>
+                        </div>
+                        <button class="btn btn-primary btn-block" id="resetPasswordBtn">Update password</button>
+                    </form>
+                </section>
+
                 <div class="divider">quick demo accounts</div>
 
-                <p class="demo-hint">Pick a role to experience the full workflow chain. No password — demo uses email lookup against seed users.</p>
+                <p class="demo-hint">Pick a role to fill its email. Every demo account currently uses <strong>Password123</strong>.</p>
 
                 <div class="role-grid" id="demoGrid">
                     <button type="button" class="role-card" data-email="hassan.r@stu.edu">

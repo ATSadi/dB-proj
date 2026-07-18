@@ -371,6 +371,52 @@ input:focus, select:focus, textarea:focus {
 textarea { min-height: 100px; resize: vertical; }
 select { cursor: pointer; }
 
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 4.5rem; }
+.password-toggle {
+    position: absolute;
+    right: 0.45rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: transparent;
+    color: var(--primary);
+    font-family: inherit;
+    font-size: 0.76rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.35rem 0.45rem;
+}
+.auth-form-links {
+    display: flex;
+    justify-content: flex-end;
+    margin: -0.45rem 0 0.8rem;
+}
+.text-btn {
+    border: 0;
+    background: transparent;
+    color: var(--primary);
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+.text-btn:hover { color: var(--accent-2); }
+.reset-panel {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: rgba(79, 140, 255, 0.05);
+}
+.reset-panel .divider { margin-top: 0; }
+.field-hint {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--faint);
+    font-size: 0.72rem;
+}
+
 /* ---------------------------------------------------------------- Buttons */
 .btn {
     position: relative;

@@ -46,13 +46,22 @@ BEGIN
     FROM workers
     WHERE worker_id = p_worker_id;
 
-    IF v_specialization <> v_category THEN
+    -- Exact match, or worker covers "other", or complaint is "other"
+    IF v_specialization <> v_category
+       AND v_specialization <> 'other'
+       AND v_category <> 'other' THEN
         RAISE_APPLICATION_ERROR(
             -20003,
             'Worker specialization (' || v_specialization ||
             ') does not match complaint category (' || v_category || ').'
         );
     END IF;
+
+    -- Close any previous open assignment on this complaint (re-assign safe)
+    UPDATE assignments
+    SET completed_at = NVL(completed_at, SYSTIMESTAMP)
+    WHERE complaint_id = p_complaint_id
+      AND completed_at IS NULL;
 
     INSERT INTO assignments (
         assignment_id,
@@ -69,7 +78,7 @@ BEGIN
     UPDATE complaints
     SET status = 'assigned'
     WHERE complaint_id = p_complaint_id
-      AND status = 'submitted';
+      AND status IN ('submitted', 'assigned');
 
     COMMIT;
 

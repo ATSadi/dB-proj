@@ -39,6 +39,13 @@ INSERT INTO users (user_id, name, roll_no, email, role) VALUES (12, 'Nadia Faroo
 INSERT INTO users (user_id, name, roll_no, email, role) VALUES (13, 'Imran Baig',       'WRK304',   'imran.b@campus.edu',   'worker');
 INSERT INTO users (user_id, name, roll_no, email, role) VALUES (14, 'Hira Sheikh',      'STU2021007', 'hira.s@stu.edu',     'student');
 
+-- All demo accounts initially use: Password123
+UPDATE users SET
+    password_hash = 'scrypt$8a43a919685c40fea1d52d7693b63799$3936a5f85386eb00a1fa13b62c5035c1ac6349e3a18ae8f234a91573437592336978b651af3dcb9a9cd58b5bf74f1b3f6219308e96d73d793d0894ac7c3deb81',
+    reset_token_hash = NULL,
+    reset_token_expires = NULL,
+    password_changed_at = SYSTIMESTAMP;
+
 -- ============================================================================
 -- LOCATIONS (24 rows)
 -- ============================================================================

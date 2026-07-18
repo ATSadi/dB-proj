@@ -3,11 +3,14 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const crypto = require('crypto');
 const oracledb = require('oracledb');
 const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const sessions = new Map();
+const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 
 app.use(cors());
 app.use(express.json());
@@ -25,28 +28,124 @@ function mapRows(rows) {
     return (rows || []).map(mapRow);
 }
 
+function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
+    const hash = crypto.scryptSync(password, salt, 64).toString('hex');
+    return `scrypt$${salt}$${hash}`;
+}
+
+function verifyPassword(password, encodedHash) {
+    try {
+        const [algorithm, salt, storedHex] = String(encodedHash || '').split('$');
+        if (algorithm !== 'scrypt' || !salt || !storedHex) return false;
+        const actual = crypto.scryptSync(password, salt, 64);
+        const expected = Buffer.from(storedHex, 'hex');
+        return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
+    } catch (_err) {
+        return false;
+    }
+}
+
+function validateNewPassword(value) {
+    const password = String(value || '');
+    if (password.length < 8 || password.length > 128) {
+        throw new Error('Password must be between 8 and 128 characters');
+    }
+    if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+        throw new Error('Password must contain at least one letter and one number');
+    }
+    return password;
+}
+
+function tokenHash(code) {
+    return crypto.createHash('sha256').update(String(code)).digest('hex');
+}
+
+function createSession(user) {
+    const token = crypto.randomBytes(32).toString('hex');
+    sessions.set(token, {
+        user_id: user.user_id,
+        role: user.role,
+        expires_at: Date.now() + SESSION_TTL_MS
+    });
+    return token;
+}
+
+function getSession(req) {
+    const authorization = req.get('Authorization') || '';
+    const token = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+    const session = sessions.get(token);
+    if (!session) return null;
+    if (session.expires_at <= Date.now()) {
+        sessions.delete(token);
+        return null;
+    }
+    return session;
+}
+
+function requireAdmin(req, res, next) {
+    const session = getSession(req);
+    if (!session) {
+        return res.status(401).json({ error: 'Please sign in again' });
+    }
+    if (session.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+    req.session = session;
+    next();
+}
+
+function requiredText(value, field, maxLength) {
+    const text = String(value || '').trim();
+    if (!text) throw new Error(`${field} is required`);
+    if (text.length > maxLength) throw new Error(`${field} must be ${maxLength} characters or fewer`);
+    return text;
+}
+
+function validEmail(value) {
+    const email = requiredText(value, 'Email', 100).toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        throw new Error('Enter a valid email address');
+    }
+    return email;
+}
+
+function sendDbError(res, err) {
+    if (err.errorNum === 1 || String(err.message).includes('ORA-00001')) {
+        return res.status(409).json({ error: 'Email, roll number, or location already exists' });
+    }
+    if (String(err.message).includes('ORA-02290')) {
+        return res.status(400).json({ error: 'A value does not match the allowed options' });
+    }
+    return res.status(500).json({ error: err.message });
+}
+
 // ---------------------------------------------------------------------------
 // Auth
 // ---------------------------------------------------------------------------
 app.post('/api/login', async (req, res) => {
     try {
-        const { email } = req.body;
-        if (!email) {
-            return res.status(400).json({ error: 'Email is required' });
+        const { email, password } = req.body;
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required' });
         }
 
         const result = await db.execute(
-            `SELECT user_id, name, roll_no, email, role
+            `SELECT user_id, name, roll_no, email, role, password_hash
              FROM users
              WHERE LOWER(email) = LOWER(:email)`,
             { email }
         );
 
         if (!result.rows.length) {
-            return res.status(401).json({ error: 'User not found' });
+            return res.status(401).json({ error: 'Invalid email or password' });
         }
 
-        const user = mapRow(result.rows[0]);
+        const row = mapRow(result.rows[0]);
+        if (!verifyPassword(password, row.password_hash)) {
+            return res.status(401).json({ error: 'Invalid email or password' });
+        }
+
+        const { password_hash: _passwordHash, ...user } = row;
 
         if (user.role === 'worker') {
             const workerResult = await db.execute(
@@ -59,9 +158,92 @@ app.post('/api/login', async (req, res) => {
             }
         }
 
-        res.json({ user });
+        res.json({ user, token: createSession(user) });
     } catch (err) {
         console.error('Login error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/forgot-password', async (req, res) => {
+    const genericMessage = 'If that account exists, a reset code has been generated.';
+    try {
+        const email = validEmail(req.body.email);
+        const result = await db.execute(
+            `SELECT user_id FROM users WHERE LOWER(email) = LOWER(:email)`,
+            { email }
+        );
+
+        if (!result.rows.length) {
+            return res.json({ message: genericMessage });
+        }
+
+        const code = String(crypto.randomInt(100000, 1000000));
+        await db.execute(
+            `UPDATE users
+             SET reset_token_hash = :resetHash,
+                 reset_token_expires = SYSTIMESTAMP + NUMTODSINTERVAL(10, 'MINUTE')
+             WHERE user_id = :userId`,
+            {
+                resetHash: tokenHash(code),
+                userId: result.rows[0].USER_ID
+            }
+        );
+
+        const response = { message: genericMessage, expires_in_minutes: 10 };
+        if (process.env.DEMO_MODE === 'true') {
+            response.demo_code = code;
+        } else {
+            console.log(`Password reset code for ${email}: ${code}`);
+        }
+        res.json(response);
+    } catch (err) {
+        if (!err.errorNum && !String(err.message).startsWith('ORA-')) {
+            return res.status(400).json({ error: err.message });
+        }
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.post('/api/reset-password', async (req, res) => {
+    try {
+        const email = validEmail(req.body.email);
+        const code = requiredText(req.body.code, 'Reset code', 6);
+        if (!/^\d{6}$/.test(code)) throw new Error('Reset code must be 6 digits');
+        const password = validateNewPassword(req.body.new_password);
+        const resetHash = tokenHash(code);
+
+        const result = await db.execute(
+            `SELECT user_id
+             FROM users
+             WHERE LOWER(email) = LOWER(:email)
+               AND reset_token_hash = :resetHash
+               AND reset_token_expires > SYSTIMESTAMP`,
+            { email, resetHash }
+        );
+
+        if (!result.rows.length) {
+            return res.status(400).json({ error: 'Reset code is invalid or expired' });
+        }
+
+        await db.execute(
+            `UPDATE users
+             SET password_hash = :passwordHash,
+                 reset_token_hash = NULL,
+                 reset_token_expires = NULL,
+                 password_changed_at = SYSTIMESTAMP
+             WHERE user_id = :userId`,
+            {
+                passwordHash: hashPassword(password),
+                userId: result.rows[0].USER_ID
+            }
+        );
+
+        res.json({ success: true, message: 'Password updated. You can now sign in.' });
+    } catch (err) {
+        if (!err.errorNum && !String(err.message).startsWith('ORA-')) {
+            return res.status(400).json({ error: err.message });
+        }
         res.status(500).json({ error: err.message });
     }
 });
@@ -79,6 +261,189 @@ app.get('/api/locations', async (_req, res) => {
         res.json(mapRows(result.rows));
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// ---------------------------------------------------------------------------
+// Admin directory management
+// ---------------------------------------------------------------------------
+app.get('/api/admin/directory', requireAdmin, async (_req, res) => {
+    try {
+        const [students, workers, locations] = await Promise.all([
+            db.execute(
+                `SELECT user_id, name, roll_no, email
+                 FROM users WHERE role = 'student'
+                 ORDER BY name`
+            ),
+            db.execute(
+                `SELECT w.worker_id, w.user_id, u.name, u.roll_no, u.email,
+                        w.specialization, w.performance_score, w.is_available
+                 FROM workers w
+                 JOIN users u ON u.user_id = w.user_id
+                 ORDER BY u.name`
+            ),
+            db.execute(
+                `SELECT location_id, building, floor, room_no, location_type
+                 FROM locations
+                 ORDER BY building, floor, room_no`
+            )
+        ]);
+
+        res.json({
+            students: mapRows(students.rows),
+            workers: mapRows(workers.rows),
+            locations: mapRows(locations.rows)
+        });
+    } catch (err) {
+        sendDbError(res, err);
+    }
+});
+
+app.post('/api/admin/students', requireAdmin, async (req, res) => {
+    try {
+        const name = requiredText(req.body.name, 'Name', 100);
+        const rollNo = requiredText(req.body.roll_no, 'Roll number', 20).toUpperCase();
+        const email = validEmail(req.body.email);
+        const passwordHash = hashPassword('Password123');
+
+        const result = await db.execute(
+            `INSERT INTO users (user_id, name, roll_no, email, role, password_hash)
+             VALUES (seq_user_id.NEXTVAL, :name, :rollNo, :email, 'student', :passwordHash)
+             RETURNING user_id INTO :userId`,
+            {
+                name,
+                rollNo,
+                email,
+                passwordHash,
+                userId: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+            }
+        );
+
+        res.status(201).json({ user_id: result.outBinds.userId[0], name, roll_no: rollNo, email });
+    } catch (err) {
+        if (!err.errorNum && !String(err.message).startsWith('ORA-')) {
+            return res.status(400).json({ error: err.message });
+        }
+        sendDbError(res, err);
+    }
+});
+
+app.post('/api/admin/students/bulk', requireAdmin, async (req, res) => {
+    const rows = Array.isArray(req.body.students) ? req.body.students : [];
+    if (!rows.length) {
+        return res.status(400).json({ error: 'No student rows supplied' });
+    }
+    if (rows.length > 2000) {
+        return res.status(400).json({ error: 'Import is limited to 2,000 students at a time' });
+    }
+
+    const summary = { total: rows.length, inserted: 0, failed: 0, errors: [] };
+    const defaultPasswordHash = hashPassword('Password123');
+    for (let index = 0; index < rows.length; index += 1) {
+        try {
+            const name = requiredText(rows[index].name, 'Name', 100);
+            const rollNo = requiredText(rows[index].roll_no, 'Roll number', 20).toUpperCase();
+            const email = validEmail(rows[index].email);
+
+            await db.execute(
+                `INSERT INTO users (user_id, name, roll_no, email, role, password_hash)
+                 VALUES (seq_user_id.NEXTVAL, :name, :rollNo, :email, 'student', :passwordHash)`,
+                { name, rollNo, email, passwordHash: defaultPasswordHash }
+            );
+            summary.inserted += 1;
+        } catch (err) {
+            summary.failed += 1;
+            summary.errors.push({
+                row: index + 2,
+                email: rows[index].email || '',
+                error: (err.errorNum === 1 || String(err.message).includes('ORA-00001'))
+                    ? 'Duplicate email or roll number'
+                    : err.message
+            });
+        }
+    }
+
+    res.status(summary.inserted ? 201 : 400).json(summary);
+});
+
+app.post('/api/admin/locations', requireAdmin, async (req, res) => {
+    try {
+        const building = requiredText(req.body.building, 'Building', 50);
+        const floor = requiredText(req.body.floor, 'Floor', 10);
+        const roomNo = requiredText(req.body.room_no, 'Room number', 20);
+        const locationType = requiredText(req.body.location_type, 'Location type', 30).toLowerCase();
+        const allowed = ['classroom', 'lab', 'hostel', 'office', 'washroom', 'corridor'];
+        if (!allowed.includes(locationType)) throw new Error('Invalid location type');
+
+        const result = await db.execute(
+            `INSERT INTO locations (location_id, building, floor, room_no, location_type)
+             VALUES (seq_location_id.NEXTVAL, :building, :floor, :roomNo, :locationType)
+             RETURNING location_id INTO :locationId`,
+            {
+                building,
+                floor,
+                roomNo,
+                locationType,
+                locationId: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+            }
+        );
+
+        res.status(201).json({ location_id: result.outBinds.locationId[0] });
+    } catch (err) {
+        if (!err.errorNum && !String(err.message).startsWith('ORA-')) {
+            return res.status(400).json({ error: err.message });
+        }
+        sendDbError(res, err);
+    }
+});
+
+app.post('/api/admin/workers', requireAdmin, async (req, res) => {
+    try {
+        const name = requiredText(req.body.name, 'Name', 100);
+        const rollNo = requiredText(req.body.roll_no, 'Worker ID', 20).toUpperCase();
+        const email = validEmail(req.body.email);
+        const specialization = requiredText(req.body.specialization, 'Specialization', 50).toLowerCase();
+        const passwordHash = hashPassword('Password123');
+        const allowed = ['electrical', 'plumbing', 'furniture', 'it', 'cleaning', 'other'];
+        if (!allowed.includes(specialization)) throw new Error('Invalid specialization');
+
+        const result = await db.execute(
+            `DECLARE
+                 v_user_id NUMBER;
+                 v_worker_id NUMBER;
+             BEGIN
+                 SELECT seq_user_id.NEXTVAL INTO v_user_id FROM dual;
+                 SELECT seq_worker_id.NEXTVAL INTO v_worker_id FROM dual;
+                 INSERT INTO users (user_id, name, roll_no, email, role, password_hash)
+                 VALUES (v_user_id, :name, :rollNo, :email, 'worker', :passwordHash);
+                 INSERT INTO workers (
+                     worker_id, user_id, specialization, performance_score, is_available
+                 ) VALUES (
+                     v_worker_id, v_user_id, :specialization, 0, 'Y'
+                 );
+                 :userId := v_user_id;
+                 :workerId := v_worker_id;
+             END;`,
+            {
+                name,
+                rollNo,
+                email,
+                specialization,
+                passwordHash,
+                userId: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+                workerId: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER }
+            }
+        );
+
+        res.status(201).json({
+            user_id: result.outBinds.userId,
+            worker_id: result.outBinds.workerId
+        });
+    } catch (err) {
+        if (!err.errorNum && !String(err.message).startsWith('ORA-')) {
+            return res.status(400).json({ error: err.message });
+        }
+        sendDbError(res, err);
     }
 });
 
@@ -269,13 +634,13 @@ app.post('/api/feedback', async (req, res) => {
             `INSERT INTO feedback (
                 feedback_id, complaint_id, student_id, rating, feedback_comment
              ) VALUES (
-                seq_feedback_id.NEXTVAL, :complaintId, :studentId, :rating, :comment
+                seq_feedback_id.NEXTVAL, :complaintId, :studentId, :rating, :feedbackComment
              )`,
             {
                 complaintId: Number(complaint_id),
                 studentId: Number(student_id),
                 rating: Number(rating),
-                comment: comment || null
+                feedbackComment: comment || null
             }
         );
 

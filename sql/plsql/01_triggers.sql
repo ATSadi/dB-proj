@@ -124,25 +124,43 @@ END;
 /
 
 -- Mark worker available again when assignment is completed
--- (only if no other open assignments remain)
+-- Compound trigger avoids ORA-04091 (mutating table) on ASSIGNMENTS
 CREATE OR REPLACE TRIGGER trg_assignments_worker_free
-AFTER UPDATE OF completed_at ON assignments
-FOR EACH ROW
-WHEN (NEW.completed_at IS NOT NULL AND OLD.completed_at IS NULL)
-DECLARE
-    v_open_assignments NUMBER;
-BEGIN
-    SELECT COUNT(*)
-    INTO v_open_assignments
-    FROM assignments
-    WHERE worker_id = :NEW.worker_id
-      AND completed_at IS NULL;
+FOR UPDATE OF completed_at ON assignments
+COMPOUND TRIGGER
+    TYPE t_worker_ids IS TABLE OF NUMBER INDEX BY PLS_INTEGER;
+    g_workers t_worker_ids;
+    g_idx     PLS_INTEGER := 0;
 
-    IF v_open_assignments = 0 THEN
-        UPDATE workers
-        SET is_available = 'Y'
-        WHERE worker_id = :NEW.worker_id;
-    END IF;
+    AFTER EACH ROW IS
+    BEGIN
+        IF :NEW.completed_at IS NOT NULL AND :OLD.completed_at IS NULL THEN
+            g_idx := g_idx + 1;
+            g_workers(g_idx) := :NEW.worker_id;
+        END IF;
+    END AFTER EACH ROW;
+
+    AFTER STATEMENT IS
+        v_open_assignments NUMBER;
+        i PLS_INTEGER;
+    BEGIN
+        i := g_workers.FIRST;
+        WHILE i IS NOT NULL LOOP
+            SELECT COUNT(*)
+            INTO v_open_assignments
+            FROM assignments
+            WHERE worker_id = g_workers(i)
+              AND completed_at IS NULL;
+
+            IF v_open_assignments = 0 THEN
+                UPDATE workers
+                SET is_available = 'Y'
+                WHERE worker_id = g_workers(i);
+            END IF;
+
+            i := g_workers.NEXT(i);
+        END LOOP;
+    END AFTER STATEMENT;
 END;
 /
 
